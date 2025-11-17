@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Rivet Admin - Gestión de Herramientas</title>
+  <link rel="stylesheet" href="admin-styles.css">
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1>Rivet Admin Panel</h1>
+      <p>Gestión de herramientas - Solo para administradores</p>
+    </header>
+
+    <div class="admin-content">
+      <!-- POST Tool -->
+      <section class="admin-section">
+        <h2>Nueva Herramienta</h2>
+        <p class="section-description">Envía una nueva herramienta a la base de datos (POST /tools)</p>
+        
+        <div class="form-group">
+          <label for="jsonInput">JSON de la herramienta:</label>
+          <textarea id="jsonInput" placeholder="Pega aquí el JSON de la herramienta..."></textarea>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" onclick="sendPOST()">
+            📤 Enviar Herramienta
+          </button>
+          <button class="btn btn-secondary" onclick="clearJSON()">
+            🗑️ Limpiar
+          </button>
+          <button class="btn btn-secondary" onclick="formatJSON()">
+            ✨ Formatear JSON
+          </button>
+        </div>
+      </section>
+
+      <!-- Combined Section: Templates, Response, Validation -->
+      <section class="admin-section">
+        <!-- Quick Templates -->
+        <div class="subsection">
+          <h2>Plantilla Rápida</h2>          
+          <div class="button-group">
+            <button class="btn btn-outline" onclick="loadTemplate('library')">
+              📚 Librería
+            </button>
+          </div>
+        </div>
+
+        <div class="subsection-divider"></div>
+
+        <!-- Response Output -->
+        <div class="subsection">
+          <h2>Respuesta del Servidor</h2>
+          <div class="output-container">
+            <pre id="output">Esperando petición...</pre>
+          </div>
+        </div>
+
+        <div class="subsection-divider"></div>
+
+        <!-- JSON Validator -->
+        <div class="subsection">
+          <h2> Validador JSON</h2>
+          <div id="validationStatus" class="validation-status">
+            <span class="status-icon">⏳</span>
+            <span class="status-text">Sin validar</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
