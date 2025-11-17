@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rivet - Explorador de Herramientas</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h1>🔗 Rivet</h1>
+        <p>Explorador de Herramientas</p>
+      </div>
+      <div class="categories" id="categories">
+        <div class="category-item active" data-category="all">📊 Todas las herramientas</div>
+      </div>
+      <div class="loaded-tools" id="loadedTools" style="display: none;">
+        <h3>Herramientas cargadas</h3>
+        <div id="toolChips"></div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              class="search-input" 
+              id="searchInput" 
+              placeholder="Buscar herramienta por toolId (ej: numpy, pandas, torch)..."
+            />
+          </div>
+          <button class="search-btn" id="searchBtn">Buscar</button>
+        </div>
+      </div>
+
+      <!-- Graph -->
+      <div class="graph-container">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-state-icon">🔍</div>
+          <h3>Comienza tu búsqueda</h3>
+          <p>Ingresa un toolId para explorar sus conexiones</p>
+        </div>
+        <div class="loading" id="loading">Buscando herramienta...</div>
+        <div class="error-message" id="errorMessage"></div>
+        <svg id="graph"></svg>
+        <div class="info-panel" id="infoPanel">
+          <h3 id="infoTitle">Información</h3>
+          <div id="infoContent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
