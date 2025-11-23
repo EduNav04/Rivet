@@ -1,8 +1,6 @@
-// Configuration
 const API_URL = "https://dflndnsl0g.execute-api.us-east-2.amazonaws.com";
 
-// Global state
-let loadedTools = new Map(); // toolId -> tool data
+let loadedTools = new Map(); 
 let currentFilter = 'all';
 
 // Initialize event listeners
@@ -14,7 +12,6 @@ document.getElementById('searchInput').addEventListener('keypress', (e) => {
 
 document.getElementById('searchBtn').addEventListener('click', searchTool);
 
-// Close info panel when clicking outside
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.node') && !e.target.closest('.info-panel')) {
     document.getElementById('infoPanel').classList.remove('visible');
@@ -27,13 +24,12 @@ async function searchTool() {
   const toolId = input.value.trim();
   
   if (!toolId) {
-    showError('Por favor ingresa un toolId');
+    showError('Please enter a toolId');
     return;
   }
 
-  // Si ya está cargada, solo mostrar el grafo
   if (loadedTools.has(toolId)) {
-    showError('Esta herramienta ya está cargada');
+    showError('This tool is already loaded');
     return;
   }
 
@@ -59,29 +55,24 @@ async function searchTool() {
     let toolData;
     
     try {
-      // Primero obtener el texto completo
       const text = await res.text();
       console.log('📝 Respuesta cruda:', text);
       
-      // Intentar parsear como JSON
       toolData = JSON.parse(text);
       console.log('✅ JSON parseado exitosamente:', toolData);
     } catch (e) {
       console.error('❌ Error al parsear JSON:', e);
-      throw new Error('Error al parsear respuesta: ' + e.message);
+      throw new Error('Error parsing response: ' + e.message);
     }
 
     if (res.status === 200 && toolData) {
       console.log('✅ Herramienta cargada correctamente');
       
-      // Agregar a herramientas cargadas
       loadedTools.set(toolId, toolData);
       
-      // Buscar comparaciones automáticamente
       console.log('🔄 Cargando comparaciones...');
       await loadComparisons(toolData);
       
-      // Actualizar UI
       updateCategories();
       updateToolChips();
       renderGraph();
@@ -90,7 +81,7 @@ async function searchTool() {
       console.log('✨ Proceso completado');
     } else {
       console.error('❌ Status no es 200 o toolData es null');
-      throw new Error(`Herramienta no encontrada (HTTP ${res.status})`);
+      throw new Error(`Tool not found (HTTP ${res.status})`);
     }
   } catch (err) {
     console.error('💥 Error en búsqueda:', err);
@@ -146,7 +137,7 @@ function updateCategories() {
 
   const container = document.getElementById('categories');
   // Keep "all" category
-  container.innerHTML = '<div class="category-item active" data-category="all">📊 Todas las herramientas</div>';
+  container.innerHTML = '<div class="category-item active" data-category="all" onclick="filterByCategory(\'all\')">📊 All Tools</div>';
   
   Array.from(categories).sort().forEach(cat => {
     const div = document.createElement('div');
@@ -211,20 +202,14 @@ function filterByCategory(category) {
   renderGraph();
 }
 
-// Render graph
+// Render graph - ONLY show the main node and its direct comparisons
 function renderGraph() {
   const svg = d3.select("#graph");
   svg.selectAll("*").remove();
 
-  // Filter tools by category
-  let toolsToShow = Array.from(loadedTools.values());
-  if (currentFilter !== 'all') {
-    toolsToShow = toolsToShow.filter(tool => 
-      tool.categories && tool.categories.includes(currentFilter)
-    );
-  }
+  const allTools = Array.from(loadedTools.values());
 
-  if (toolsToShow.length === 0) {
+  if (allTools.length === 0) {
     showEmptyState();
     return;
   }
@@ -234,40 +219,36 @@ function renderGraph() {
   const width = svg.node().clientWidth;
   const height = svg.node().clientHeight;
 
-  // Create nodes and links
+  const mainTool = allTools[0]; 
+  const mainToolId = mainTool.toolId;
+
   const nodes = [];
   const links = [];
   const nodeMap = new Map();
 
-  toolsToShow.forEach(tool => {
-    const toolId = tool.toolId;
-    if (!nodeMap.has(toolId)) {
-      nodeMap.set(toolId, { 
-        id: toolId, 
-        name: tool.name || toolId, 
-        ...tool,
-        isMain: true 
-      });
-      nodes.push(nodeMap.get(toolId));
-    }
-
-    if (tool.predefinedComparisons) {
-      tool.predefinedComparisons.forEach(compId => {
-        // Add comparison node
-        if (!nodeMap.has(compId)) {
-          const compTool = loadedTools.get(compId);
-          nodeMap.set(compId, { 
-            id: compId, 
-            name: compTool ? compTool.name : compId,
-            ...(compTool || {}),
-            isComparison: !compTool
-          });
-          nodes.push(nodeMap.get(compId));
-        }
-        links.push({ source: toolId, target: compId });
-      });
-    }
+  nodeMap.set(mainToolId, { 
+    id: mainToolId, 
+    name: mainTool.name || mainToolId, 
+    ...mainTool,
+    isMain: true 
   });
+  nodes.push(nodeMap.get(mainToolId));
+
+  if (mainTool.predefinedComparisons) {
+    mainTool.predefinedComparisons.forEach(compId => {
+      if (!nodeMap.has(compId)) {
+        const compTool = loadedTools.get(compId);
+        nodeMap.set(compId, { 
+          id: compId, 
+          name: compTool ? compTool.name : compId,
+          ...(compTool || {}),
+          isComparison: true
+        });
+        nodes.push(nodeMap.get(compId));
+      }
+      links.push({ source: mainToolId, target: compId });
+    });
+  }
 
   // Force simulation
   const simulation = d3.forceSimulation(nodes)
@@ -295,18 +276,39 @@ function renderGraph() {
       .on("end", dragended))
     .on("click", showInfo);
 
+  // Generate random color for each node
+  const getNodeColor = (d) => {
+    if (d.isComparison) return "#94a3b8"; 
+    
+    const colors = [
+      "#6c8fff", "#ff6b9d", "#4ade80", "#fbbf24", 
+      "#a78bfa", "#fb923c", "#38bdf8", "#f472b6",
+      "#34d399", "#fcd34d", "#c084fc", "#60a5fa"
+    ];
+    
+    // Use toolId to consistently assign the same color to the same tool
+    const hash = d.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   node.append("circle")
     .attr("r", d => d.isComparison ? 25 : 35)
-    .attr("fill", d => d.isComparison ? "#4a5568" : "#6c8fff")
+    .attr("fill", d => getNodeColor(d))
     .attr("stroke", d => d.isComparison ? "#2d3748" : "#4c6eef");
 
+  // Add text inside the circle
   node.append("text")
-    .attr("dy", d => d.isComparison ? 45 : 55)
+    .attr("dy", 5)
     .attr("text-anchor", "middle")
-    .attr("fill", "#e0e0e0")
-    .text(d => d.name || d.id);
+    .attr("fill", "#ffffff")
+    .attr("font-size", d => d.isComparison ? "11px" : "13px")
+    .attr("font-weight", "700")
+    .text(d => {
+      const name = d.name || d.id;
+      // Truncate long names to fit inside circle
+      return name.length > 8 ? name.substring(0, 7) + '...' : name;
+    });
 
-  // Update positions
   simulation.on("tick", () => {
     link
       .attr("x1", d => d.source.x)
@@ -345,19 +347,19 @@ function renderGraph() {
     
     let html = `<p><strong>ID:</strong> ${d.id}</p>`;
     if (d.categories) {
-      html += `<p><strong>Categorías:</strong> ${d.categories.join(', ')}</p>`;
+      html += `<p><strong>Categories:</strong> ${d.categories.join(', ')}</p>`;
     }
     if (d.supportedPlatforms) {
-      html += `<p><strong>Plataformas:</strong> ${d.supportedPlatforms.join(', ')}</p>`;
+      html += `<p><strong>Supported Platforms:</strong> ${d.supportedPlatforms.join(', ')}</p>`;
     }
     if (d.learningCurve) {
-      html += `<p><strong>Curva de aprendizaje:</strong> ${d.learningCurve}</p>`;
+      html += `<p><strong>Learning Curve:</strong> ${d.learningCurve}</p>`;
     }
     if (d.documentationQuality) {
-      html += `<p><strong>Calidad documentación:</strong> ${d.documentationQuality}</p>`;
+      html += `<p><strong>Documentation Quality:</strong> ${d.documentationQuality}</p>`;
     }
     if (d.predefinedComparisons && d.predefinedComparisons.length > 0) {
-      html += `<p><strong>Comparaciones:</strong> ${d.predefinedComparisons.join(', ')}</p>`;
+      html += `<p><strong>Comparisons:</strong> ${d.predefinedComparisons.join(', ')}</p>`;
     }
     
     content.innerHTML = html;
