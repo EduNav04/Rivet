@@ -12,14 +12,14 @@
     <!-- Sidebar -->
     <div class="sidebar">
       <div class="sidebar-header">
-        <h1>🔗 Rivet</h1>
+        <h1>Rivet</h1>
         <p>Explorador de Herramientas</p>
       </div>
       <div class="categories" id="categories">
-        <div class="category-item active" data-category="all">📊 Todas las herramientas</div>
+        <div class="category-item active" data-category="all">📊 All Tools</div>
       </div>
       <div class="loaded-tools" id="loadedTools" style="display: none;">
-        <h3>Herramientas cargadas</h3>
+        <h3>Loaded Tools</h3>
         <div id="toolChips"></div>
       </div>
     </div>
@@ -35,10 +35,10 @@
               type="text" 
               class="search-input" 
               id="searchInput" 
-              placeholder="Buscar herramienta por toolId (ej: numpy, pandas, torch)..."
+              placeholder="Search tool by toolId (e.g: numpy, pandas, torch)..."
             />
           </div>
-          <button class="search-btn" id="searchBtn">Buscar</button>
+          <button class="search-btn" id="searchBtn">Search</button>
         </div>
       </div>
 
@@ -46,14 +46,14 @@
       <div class="graph-container">
         <div class="empty-state" id="emptyState">
           <div class="empty-state-icon">🔍</div>
-          <h3>Comienza tu búsqueda</h3>
-          <p>Ingresa un toolId para explorar sus conexiones</p>
+          <h3>Start your search</h3>
+          <p>Enter a toolId to explore its connections</p>
         </div>
-        <div class="loading" id="loading">Buscando herramienta...</div>
+        <div class="loading" id="loading">Searching tool...</div>
         <div class="error-message" id="errorMessage"></div>
         <svg id="graph"></svg>
         <div class="info-panel" id="infoPanel">
-          <h3 id="infoTitle">Información</h3>
+          <h3 id="infoTitle">Information</h3>
           <div id="infoContent"></div>
         </div>
       </div>
