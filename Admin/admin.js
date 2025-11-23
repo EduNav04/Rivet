@@ -1,39 +1,37 @@
-// Configuration
 const API_URL = "https://dflndnsl0g.execute-api.us-east-2.amazonaws.com";
 
-// Validation in real-time
 const jsonInput = document.getElementById('jsonInput');
 jsonInput.addEventListener('input', validateJSON);
 
-// Initial validation
 validateJSON();
 
-// Send POST request
 async function sendPOST() {
   const output = document.getElementById('output');
   const jsonText = document.getElementById('jsonInput').value;
   const btn = event.target;
+  const btnIcon = btn.querySelector('i');
+  const originalIcon = btnIcon.className;
+  const originalText = btn.childNodes[1].textContent;
 
-  // Validate JSON before sending
   let payload;
   try {
     payload = JSON.parse(jsonText);
   } catch (err) {
-    output.textContent = '❌ JSON inválido en el textarea:\n\n' + err.message;
+    output.textContent = '✗ JSON inválido en el textarea:\n\n' + err.message;
     output.className = 'error';
     console.error('JSON inválido:', err);
     return;
   }
 
-  // Disable button and show loading
   btn.disabled = true;
-  btn.textContent = '⏳ Enviando...';
+  btnIcon.className = 'bi bi-hourglass-split';
+  btn.childNodes[1].textContent = ' Enviando...';
   output.textContent = '⏳ Enviando petición al servidor...';
   output.className = '';
 
   try {
-    console.log('📤 Enviando POST a /tools');
-    console.log('📦 Payload:', payload);
+    console.log('Enviando POST a /tools');
+    console.log('Payload:', payload);
 
     const res = await fetch(`${API_URL}/tools`, {
       method: 'POST',
@@ -45,7 +43,6 @@ async function sendPOST() {
 
     console.log('📥 Respuesta recibida:', res.status, res.statusText);
 
-    // Get response content
     const contentType = res.headers.get('content-type') || '';
     let bodyText;
     
@@ -61,7 +58,7 @@ async function sendPOST() {
     }
 
     // Format output
-    const statusEmoji = res.ok ? '✅' : '❌';
+    const statusEmoji = res.ok ? '✓' : '✗';
     const outputText = `${statusEmoji} HTTP ${res.status} ${res.statusText}\n\n${bodyText}`;
     
     output.textContent = outputText;
@@ -72,21 +69,22 @@ async function sendPOST() {
     // If successful, clear the textarea
     if (res.ok) {
       setTimeout(() => {
-        if (confirm('✅ Herramienta creada exitosamente.\n¿Deseas limpiar el formulario?')) {
+        if (confirm('✓ Herramienta creada exitosamente.\n¿Deseas limpiar el formulario?')) {
           clearJSON();
         }
       }, 500);
     }
 
   } catch (err) {
-    const errorText = `❌ Error de red:\n\n${err.message}`;
+    const errorText = `✗ Error de red:\n\n${err.message}`;
     output.textContent = errorText;
     output.className = 'error';
     console.error("Error en fetch POST:", err);
   } finally {
     // Re-enable button
     btn.disabled = false;
-    btn.textContent = '📤 Enviar Herramienta';
+    btnIcon.className = originalIcon;
+    btn.childNodes[1].textContent = originalText;
   }
 }
 
@@ -97,7 +95,7 @@ function validateJSON() {
   
   if (!jsonText) {
     status.className = 'validation-status';
-    status.innerHTML = '<span class="status-icon">⏳</span><span class="status-text">Sin validar</span>';
+    status.innerHTML = '<i class="bi bi-hourglass-split status-icon"></i><span class="status-text">Sin validar</span>';
     return;
   }
 
@@ -111,18 +109,17 @@ function validateJSON() {
     
     if (errors.length > 0) {
       status.className = 'validation-status invalid';
-      status.innerHTML = `<span class="status-icon">⚠️</span><span class="status-text">Campos faltantes: ${errors.join(', ')}</span>`;
+      status.innerHTML = `<i class="bi bi-exclamation-triangle status-icon"></i><span class="status-text">Campos faltantes: ${errors.join(', ')}</span>`;
     } else {
       status.className = 'validation-status valid';
-      status.innerHTML = '<span class="status-icon">✅</span><span class="status-text">JSON válido</span>';
+      status.innerHTML = '<i class="bi bi-check-circle status-icon"></i><span class="status-text">JSON válido</span>';
     }
   } catch (err) {
     status.className = 'validation-status invalid';
-    status.innerHTML = `<span class="status-icon">❌</span><span class="status-text">JSON inválido: ${err.message}</span>`;
+    status.innerHTML = `<i class="bi bi-x-circle status-icon"></i><span class="status-text">JSON inválido: ${err.message}</span>`;
   }
 }
 
-// Clear JSON textarea
 function clearJSON() {
   jsonInput.value = '';
   document.getElementById('output').textContent = 'Esperando petición...';
@@ -139,7 +136,7 @@ function formatJSON() {
     jsonInput.value = JSON.stringify(parsed, null, 2);
     validateJSON();
   } catch (err) {
-    alert('❌ No se puede formatear: JSON inválido\n\n' + err.message);
+    alert('✗ No se puede formatear: JSON inválido\n\n' + err.message);
   }
 }
 
@@ -182,7 +179,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-console.log('🔒 Admin panel loaded');
-console.log('💡 Atajos de teclado:');
-console.log('   Ctrl/Cmd + S: Formatear JSON');
-console.log('   Ctrl/Cmd + Enter: Enviar');
+console.log('Admin panel loaded');
+console.log('Atajos de teclado:');
+console.log('Ctrl/Cmd + S: Formatear JSON');
+console.log('Ctrl/Cmd + Enter: Enviar');
